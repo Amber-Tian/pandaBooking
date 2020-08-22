@@ -4,8 +4,11 @@
       <Types :type.sync="record.type"/>
     </div>
     <Tags :selected-tags.sync="record.selectedTags"/>
-    <Notes @update:notes="onUpdateNotes" :notes="record.notes"/>
-    <NumberPad ref="numberPad" :amount.sync="record.amount" @submit="saveRecord"/>
+    <Notes :notes.sync="record.notes"/>
+    <NumberPad :createdAt.sync="record.createdAt"
+               ref="numberPad"
+               :amount.sync="record.amount"
+               @submit="saveRecord"/>
   </Layout>
 </template>
 
@@ -16,6 +19,7 @@
   import Types from '@/components/Types.vue';
   import NumberPad from '@/components/NumberPad.vue';
   import {Component} from 'vue-property-decorator';
+  import dayjs from 'dayjs';
 
   @Component({
     components: {NumberPad, Types, Notes, Tags}
@@ -34,12 +38,9 @@
       selectedTags: [],
       notes: '',
       type: '-',
-      amount: 0
+      amount: 0,
+      createdAt: dayjs().toISOString()
     };
-
-    onUpdateNotes(value: string) {
-      this.record.notes = value;
-    }
 
     saveRecord() {
       const continueSave = () => {

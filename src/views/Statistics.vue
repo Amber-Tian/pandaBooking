@@ -13,7 +13,8 @@
               <span>{{showTagName(value.selectedTags)}}</span>
               <span class="notes">{{value.notes}}</span>
               <span class="time">{{showDetailTime(value.createdAt)}}</span>
-              <span>￥{{value.amount}}</span>
+              <span class="money">￥{{value.amount}}</span>
+              <span class="delete">删除</span>
             </li>
           </ul>
         </li>
@@ -77,7 +78,9 @@
     }
 
     showDetailTime(time: string) {
-      return dayjs(time).format('H:mm:ss');
+      if (dayjs(time).hour()) {
+        return dayjs(time).format('H:mm:ss');
+      }
     }
 
     beautifyTime(string: string) {
@@ -131,17 +134,33 @@
   .record {
     @extend %item;
     background-color: #fff;
-  }
+    overflow: hidden;
 
-  .notes {
-    margin-right: auto;
-    margin-left: 16px;
-    color: #999;
-  }
+    &:not(:last-child) {
+      border-bottom: 1px dashed #ccc;
+    }
 
-  .time {
-    margin-left: auto;
-    margin-right: 16px;
-    color: #999;
+    > .delete {
+      color: #FF4D4F;
+      padding-left: 16px;
+      margin-right: -66px;
+      border-left: 1px dashed #ccc;
+    }
+
+    > .notes {
+      margin-right: auto;
+      margin-left: 16px;
+      color: #999;
+    }
+
+    > .time {
+      margin-left: auto;
+      margin-right: 16px;
+      color: #999;
+    }
+
+    > .money {
+      padding-right: 16px;
+    }
   }
 </style>

@@ -1,11 +1,21 @@
 <template>
   <div class="numberPad">
-    <div class="output">{{output}}</div>
-    <div class="buttons">
+    <div class="wrapper">
+      <label class="notes">
+        <span>日期</span>
+        <input :value="getTime(createdAt)"
+               @change="onValueChange($event.target.value)"
+               type="date" placeholder="在这里输入日期">
+      </label>
+      <div class="output">{{output}}</div>
+    </div>
+    <div v-show="type" class="buttons">
       <button @click="inputContent">1</button>
       <button @click="inputContent">2</button>
       <button @click="inputContent">3</button>
-      <button @click="remove">删除</button>
+      <button @click="remove">
+        <Icon class="deleteIcon" name="delete"/>
+      </button>
       <button @click="inputContent">4</button>
       <button @click="inputContent">5</button>
       <button @click="inputContent">6</button>
@@ -23,16 +33,30 @@
 <script lang="ts">
   import Vue from 'vue';
   import {Component, Prop} from 'vue-property-decorator';
+  import dayjs from 'dayjs';
 
   @Component
   export default class NumberPad extends Vue {
     @Prop(Number) amount!: number;
+    @Prop(String) createdAt!: string;
     output = this.amount.toString();
+
+    get type() {
+      return this.$store.state.padType;
+    }
+
+    getTime(value: string) {
+      return dayjs(value).format('YYYY-MM-DD');
+    }
+
+    onValueChange(value: string) {
+      this.$emit('update:createdAt', value);
+    }
 
     inputContent(event: MouseEvent) {
       const button = (event.target as HTMLButtonElement);
       const input = button.textContent!;
-      if (this.output.length === 16) {return;}
+      if (this.output.length === 9) {return;}
       if (this.output === '0') {
         if ('0123456789'.indexOf(input) >= 0) {
           this.output = input;
@@ -71,19 +95,42 @@
   @import "~@/assets/style/helper.scss";
 
   .numberPad {
-    .output {
-      font-size: 32px;
-      font-family: Consolas, monospace;
-      text-align: right;
-      padding: 8px 16px;
+    .wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       box-shadow: inset 0 -3px 3px -3px rgba(0, 0, 0, .25),
       inset 0 3px 3px -3px rgba(0, 0, 0, .25);
+
+      .notes {
+        background: #f5f5f5;
+        display: flex;
+        align-items: center;
+        font-size: 16px;
+        padding-left: 8px;
+        width: 55%;
+
+        input {
+          padding: 8px;
+          background: transparent;
+          border: none;
+          width: 80%;
+        }
+      }
+
+      .output {
+        font-size: 32px;
+        font-family: Consolas, monospace;
+        text-align: right;
+        padding: 8px;
+        width: 45%;
+      }
     }
 
     .buttons {
       height: 64*4px;
       @extend %clearFix;
-      background: linear-gradient(to bottom right, lighten($color-theme, 4*6%) ,$color-theme );
+      background: linear-gradient(to bottom right, lighten($color-theme, 4*6%), $color-theme);
 
       > button {
         width: 25%;
@@ -99,6 +146,11 @@
 
         &.zero {
           width: 25*2%;
+        }
+
+        > .deleteIcon {
+          width: 40%;
+          height: 40%;
         }
       }
     }

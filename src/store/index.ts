@@ -7,17 +7,22 @@ import router from '@/router';
 Vue.use(Vuex);
 
 type RootState = {
+  padType: boolean
   tagList: Tag[]
   recordList: RecordItem[]
   currentTag?: Tag
 }
 const store = new Vuex.Store({
   state: {
+    padType: true,
     tagList: [],
     recordList: [],
     currentTag: undefined
   } as RootState,
   mutations: {
+    changePadType(state) {
+      state.padType = !state.padType;
+    },
     setCurrentTag(state, id: string) {
       state.currentTag = state.tagList.filter(item => item.id === id)[0];
     },
@@ -27,10 +32,10 @@ const store = new Vuex.Store({
     fetchTags(state) {
       state.tagList = JSON.parse(window.localStorage.getItem('tagList') || '[]');
       if (!state.tagList || state.tagList.length === 0) {
-        store.commit('createTag', '衣')
-        store.commit('createTag', '食')
-        store.commit('createTag', '住')
-        store.commit('createTag', '行')
+        store.commit('createTag', '衣');
+        store.commit('createTag', '食');
+        store.commit('createTag', '住');
+        store.commit('createTag', '行');
       }
     },
     createTag(state, name: string) {
@@ -58,14 +63,14 @@ const store = new Vuex.Store({
       state.tagList.splice(index, 1);
       store.commit('saveTags');
     },
-    updateTag(state, payload: {id: string, name: string}) {
+    updateTag(state, payload: { id: string, name: string }) {
       const {id, name} = payload;
       const idList = state.tagList.map(item => item.id);
       if (idList.indexOf(id) >= 0) {
         const tag = state.tagList.filter(item => item.id === id)[0];
         const names = state.tagList.map(item => item.name);
         if (names.indexOf(name) >= 0 && tag.name !== name) {
-          window.alert('标签名重复')
+          window.alert('标签名重复');
         } else {
           tag.name = name;
           store.commit('saveTags');
@@ -78,7 +83,6 @@ const store = new Vuex.Store({
     },
     createRecord(state, record) {
       const record2 = clone(record);
-      record2.createdAt = new Date();
       state.recordList.push(record2);
       store.commit('saveRecord');
     },
