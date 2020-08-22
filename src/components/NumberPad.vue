@@ -50,7 +50,11 @@
     }
 
     onValueChange(value: string) {
-      this.$emit('update:createdAt', value);
+      let value2: string;
+      if (dayjs(value).isSame(dayjs(), 'day')) {
+        value2 = dayjs().toISOString();
+      } else {value2 = value;}
+      this.$emit('update:createdAt', value2);
     }
 
     inputContent(event: MouseEvent) {

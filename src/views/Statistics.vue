@@ -4,6 +4,7 @@
     <div class="types">
       <Types :type.sync="type"/>
     </div>
+    <Chart :options="chartOptions"/>
     <div>
       <ul v-if="resultList.length">
         <li v-for="(item, index) in resultList" :key="index">
@@ -13,8 +14,7 @@
               <span>{{showTagName(value.selectedTags)}}</span>
               <span class="notes">{{value.notes}}</span>
               <span class="time">{{showDetailTime(value.createdAt)}}</span>
-              <span class="money">￥{{value.amount}}</span>
-              <span class="delete">删除</span>
+              <span>￥{{value.amount}}</span>
             </li>
           </ul>
         </li>
@@ -33,9 +33,11 @@
   import dayjs from 'dayjs';
   import clone from '@/lib/clone';
   import Logo from '@/components/Logo.vue';
+  import Chart from '@/components/Chart.vue';
+  import _ from 'lodash';
 
   @Component({
-    components: {Logo, Types}
+    components: {Chart, Logo, Types}
   })
   export default class Statistic extends Vue {
     type = '-';
@@ -45,6 +47,57 @@
       return amounts.reduce((total, i) => {
         return total + i;
       }, 0);
+    }
+
+    get chartKeyValue() {
+      const today = new Date();
+      const array = [];
+      for (let i = 0; i <= 29; i++) {
+        const dateString = dayjs(today).subtract(i, 'day').format('YYYY-MM-DD');
+        const found = _.find(this.recordList, {createdAt: dateString});
+        array.push({
+          date: dateString, value: found ? found.amount : 0
+        });
+      }
+      return array.reverse();
+    }
+
+    get chartOptions() {
+      const keys = this.chartKeyValue.map(item => item.date);
+      const values = this.chartKeyValue.map(item => item.value);
+      return {
+        grid: {
+          left: 0,
+          right: 0,
+          top: 0,
+          height: 180
+        },
+        xAxis: {
+          type: 'category',
+          data: keys,
+          axisTick: {alignWithLabel: true},
+          axisLabel: {
+            formatter: function (value: string) {
+              return value.substr(5);
+            }
+          }
+        },
+        yAxis: {
+          type: 'value'
+        },
+        series: [{
+          symbolSize: 15,
+          data: values,
+          itemStyle: {color: '#42b983'},
+          type: 'line'
+        }],
+        tooltip: {
+          show: true,
+          triggerOn: 'click',
+          formatter: '{c}',
+          position: 'top',
+        }
+      };
     }
 
     get recordList() {
@@ -140,13 +193,6 @@
       border-bottom: 1px dashed #ccc;
     }
 
-    > .delete {
-      color: #FF4D4F;
-      padding-left: 16px;
-      margin-right: -66px;
-      border-left: 1px dashed #ccc;
-    }
-
     > .notes {
       margin-right: auto;
       margin-left: 16px;
@@ -157,10 +203,6 @@
       margin-left: auto;
       margin-right: 16px;
       color: #999;
-    }
-
-    > .money {
-      padding-right: 16px;
     }
   }
 </style>
