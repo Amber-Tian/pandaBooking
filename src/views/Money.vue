@@ -45,13 +45,13 @@
     saveRecord() {
       const continueSave = () => {
         this.$store.commit('createRecord', this.record);
-        window.alert('账单保存成功');
+        window.alert('记账完成');
         (this.$refs.numberPad as HTMLFormElement).clear();
         this.record.notes = '';
       };
 
       if (!this.record.selectedTags || this.record.selectedTags.length === 0) {
-        if (window.confirm('没有选标签确认继续吗？')) {
+        if (window.confirm('未选标签继续吗？')) {
           continueSave();
         } else {return;}
       } else {

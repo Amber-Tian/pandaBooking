@@ -4,6 +4,7 @@
       <label class="notes">
         <span>日期</span>
         <input :value="getTime(createdAt)"
+               :max="today"
                @change="onValueChange($event.target.value)"
                type="date" placeholder="在这里输入日期">
       </label>
@@ -40,6 +41,7 @@
     @Prop(Number) amount!: number;
     @Prop(String) createdAt!: string;
     output = this.amount.toString();
+    today = dayjs().format('YYYY-MM-DD');
 
     get type() {
       return this.$store.state.padType;

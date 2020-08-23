@@ -4,7 +4,9 @@
     <div class="types">
       <Types :type.sync="type"/>
     </div>
-    <Chart :options="chartOptions"/>
+    <div ref="chartWrapper" class="wrapper">
+      <Chart :options="chartOptions"/>
+    </div>
     <div>
       <ul v-if="resultList.length">
         <li v-for="(item, index) in resultList" :key="index">
@@ -42,6 +44,11 @@
   export default class Statistic extends Vue {
     type = '-';
 
+    mounted() {
+      const div = (this.$refs.chartWrapper as HTMLDivElement);
+      div.scrollLeft = div.scrollWidth;
+    }
+
     totalMoney(item: RecordItem[]) {
       const amounts = item.map(i => i.amount);
       return amounts.reduce((total, i) => {
@@ -54,9 +61,9 @@
       const array = [];
       for (let i = 0; i <= 29; i++) {
         const dateString = dayjs(today).subtract(i, 'day').format('YYYY-MM-DD');
-        const found = _.find(this.recordList, {createdAt: dateString});
+        const found = _.find(this.resultList, {title: dateString});
         array.push({
-          date: dateString, value: found ? found.amount : 0
+          date: dateString, value: found ? this.totalMoney(found.item) : 0
         });
       }
       return array.reverse();
@@ -69,8 +76,8 @@
         grid: {
           left: 0,
           right: 0,
-          top: 0,
-          height: 180
+          top: 50,
+          height: 180,
         },
         xAxis: {
           type: 'category',
@@ -78,12 +85,17 @@
           axisTick: {alignWithLabel: true},
           axisLabel: {
             formatter: function (value: string) {
-              return value.substr(5);
+              if (dayjs(value).isSame(dayjs(), 'day')) {
+                return '今天';
+              } else {
+                return value.substr(5);
+              }
             }
           }
         },
         yAxis: {
-          type: 'value'
+          type: 'value',
+          show: false
         },
         series: [{
           symbolSize: 15,
@@ -109,14 +121,22 @@
       if (recordList.length === 0) {return [];}
       const newList = clone(recordList).filter((i: RecordItem) => i.type === this.type).sort((a: any, b: any) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf());
       if (newList.length === 0) {return [];}
-      const resultList = [{title: dayjs(newList[0].createdAt).format('YYYY年M月D日'), item: [newList[0]]}];
+      const resultList = [
+        {
+          title: dayjs(newList[0].createdAt).format('YYYY-MM-DD'),
+          item: [newList[0]]
+        }
+      ];
       for (let i = 1; i < newList.length; i++) {
         const last = resultList[resultList.length - 1];
         // if (dayjs(last.title).isSame(dayjs(newList[i].createdAt), 'day')) {
-        if (last.title === dayjs(newList[i].createdAt).format('YYYY年M月D日')) {
+        if (last.title === dayjs(newList[i].createdAt).format('YYYY-MM-DD')) {
           last.item.push(newList[i]);
         } else {
-          resultList.push({title: dayjs(newList[i].createdAt).format('YYYY年M月D日'), item: [newList[i]]});
+          resultList.push({
+            title: dayjs(newList[i].createdAt).format('YYYY-MM-DD'),
+            item: [newList[i]]
+          });
         }
       }
       return resultList;
@@ -137,9 +157,9 @@
     }
 
     beautifyTime(string: string) {
-      const now = dayjs().format('YYYY年M月D日');
-      const beforeOneDay = dayjs().subtract(1, 'day').format('YYYY年M月D日');
-      const beforeTwoDay = dayjs().subtract(2, 'day').format('YYYY年M月D日');
+      const now = dayjs().format('YYYY-MM-DD');
+      const beforeOneDay = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
+      const beforeTwoDay = dayjs().subtract(2, 'day').format('YYYY-MM-DD');
 
       if (now === string) {
         return '今天';
@@ -169,6 +189,14 @@
 
     &.selected {
       background-color: #fff;
+    }
+  }
+
+  .wrapper {
+    overflow: auto;
+
+    &::-webkit-scrollbar {
+      display: none;
     }
   }
 
